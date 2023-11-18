@@ -9,9 +9,13 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 public class TransactionService {
@@ -24,6 +28,9 @@ public class TransactionService {
 
     @Autowired
     ObjectMapper objectMapper; //helps in transforming json object to string1
+
+    @Autowired
+    RestTemplate restTemplate;
 
     private static Logger logger = LoggerFactory.getLogger(TransactionService.class);
     public String initiateTransaction(String sender, String receiver, String purpose, Double amount) throws JsonProcessingException {
@@ -89,4 +96,15 @@ public class TransactionService {
         kafkaTemplate.send(CommonConstants.TRANSACTION_COMPLETION_TOPIC, objectMapper.writeValueAsString(json));
 
     }
+
+    //api call to user service through transaction service
+    private JSONObject getUserFromUserService(String username) {
+        //create service user and pass it through headers
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setBasicAuth("txn_service", "txn123");
+        HttpEntity request = new HttpEntity(httpHeaders);
+
+        return restTemplate.exchange("http://localhost:6001/admin/user" + username, HttpMethod.GET, request, JSONObject.class).getBody();
+    }
+
 }
