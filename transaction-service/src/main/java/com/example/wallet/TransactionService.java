@@ -14,11 +14,21 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
-public class TransactionService {
+public class TransactionService implements UserDetailsService {
 
     @Autowired
     TransactionRepository transactionRepository;
@@ -58,7 +68,6 @@ public class TransactionService {
 
         return transaction.getTransactionId();
 
-
     }
 
     @KafkaListener(topics = CommonConstants.WALLET_UPDATED_TOPIC, groupId="EWallet_Group")      //will act as a consumer
@@ -66,11 +75,14 @@ public class TransactionService {
 
         JSONObject data = (JSONObject) new JSONParser().parse(msg);
 
+        String transactionId = (String) data.get("transactionId");
         String sender = (String) data.get("sender");
         String receiver = (String) data.get("receiver");
         Double amount = (Double) data.get("amount");
-        String transactionId = (String) data.get("transactionId");
+
         WalletUpdateStatus walletUpdateStatus = (WalletUpdateStatus) data.get("walletUpdateStatus");
+
+        JSONObject senderObj = getUserFromUserService(sender);
 
         if (walletUpdateStatus == WalletUpdateStatus.SUCCESS) {
              transactionRepository.updateTransaction(transactionId, TransactionStatus.SUCCESS);
@@ -79,7 +91,7 @@ public class TransactionService {
             transactionRepository.updateTransaction(transactionId, TransactionStatus.FAILED);
         }
 
-//        //String senderMsg = "Hi, your transaction with Id " + transactionId + " is " + walletUpdateStatus;
+ //       String senderMsg = "Hi, your transaction with Id " + transactionId + " is " + walletUpdateStatus;
 //
 //        JSONObject senderEmailObj = new JSONObject();
 //        senderEmailObj.put("sender", sender);
@@ -105,6 +117,23 @@ public class TransactionService {
         HttpEntity request = new HttpEntity(httpHeaders);
 
         return restTemplate.exchange("http://localhost:6001/admin/user" + username, HttpMethod.GET, request, JSONObject.class).getBody();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+        JSONObject requestedUser = getUserFromUserService(username);
+
+        List<GrantedAuthority> authorities;
+
+        List<LinkedHashMap<String, String>> requestAuthorities = (List<LinkedHashMap<String, String>>) requestedUser.get("authorites");
+
+        authorities = requestAuthorities.stream()
+                .map(x -> x.get("authority"))
+                .map(x -> new SimpleGrantedAuthority(x))
+                .collect(Collectors.toList());
+
+        return new User((String) requestedUser.get("username"), (String) requestedUser.get("password"), authorities);
     }
 
 }

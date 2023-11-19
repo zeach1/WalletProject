@@ -8,14 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 
-@Repository
 @Transactional
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
 
     @Modifying
     @Query("update Transaction t set t.transactionStatus = ?2 where t.transactionId =?1")
     JSONObject updateTransaction(String transactionId, TransactionStatus transactionStatus);
-
 
 }
 

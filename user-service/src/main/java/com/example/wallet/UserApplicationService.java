@@ -21,7 +21,7 @@ public class UserApplicationService implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        User txnServiceUser = User.builder()
+     /*   User txnServiceUser = User.builder()
                 .phoneNumber("txn_Service")
                 .password(passwordEncoder.encode("txn123"))
                 .authorities(UserConstants.SERVICE_AUTHORITY)
@@ -29,6 +29,6 @@ public class UserApplicationService implements CommandLineRunner {
                 .userIdentifier(UserIdentifier.SERVICE_ID)
                 .identifierValue("txn123")
                 .build();
-        userRepository.save(txnServiceUser);
+        userRepository.save(txnServiceUser);*/
     }
 }
