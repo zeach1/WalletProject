@@ -49,7 +49,7 @@ public class WalletService {
 
 
     @KafkaListener(topics = CommonConstants.TRANSACTION_CREATION_TOPIC, groupId="EWallet_Group")      //will act as a consumer
-    public void udpateWalletForTransaction(String msg) throws ParseException, JsonProcessingException {
+    public void updateWalletForTransaction(String msg) throws ParseException, JsonProcessingException {
 
         JSONObject data = (JSONObject) new JSONParser().parse(msg);
 

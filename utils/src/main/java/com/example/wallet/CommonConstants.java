@@ -6,13 +6,13 @@ public class CommonConstants {
     public static final String USER_CREATION_TOPIC = "user_created";
 
     //Used when transaction is initiated
-    public static final String TRANSACTION_CREATION_TOPIC = "";
+    public static final String TRANSACTION_CREATION_TOPIC = "txn_created";
 
     //Used when transaction is completed
-    public static final String TRANSACTION_COMPLETION_TOPIC = "";
+    public static final String TRANSACTION_COMPLETION_TOPIC = "txn_completed";
 
     //Used when wallet is updated
-    public static final String WALLET_UPDATED_TOPIC ="user_";
+    public static final String WALLET_UPDATED_TOPIC ="wallet_updated";
 
     public static final String USER_CREATION_TOPIC_USERID = "userId";
     public static final String USER_CREATION_TOPIC_PHONE_NUMBER = "phoneNumber";
